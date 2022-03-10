@@ -1,1 +1,1 @@
-# CS-481-GA-PathFinder
+# CS481-GA-PathFinder
