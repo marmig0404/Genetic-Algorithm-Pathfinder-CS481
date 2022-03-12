@@ -1,3 +1,4 @@
+from math import sqrt
 import numpy as np
 
 
@@ -29,9 +30,23 @@ class Vector:
             self.value = (self.value) / np.linalg.norm(self.value)
         return self
 
-    def averageWith(self, other):
+    def average_with(self, other):
         return Vector((self + other) / 2)
 
+    def distance_from(self, other):
+        return sqrt((self.x() - other.x()) ** 2 + (self.y() - other.y()) ** 2)
+
+    def cross(self, other):
+        if isinstance(other, Vector):
+            return np.cross(self.value, other.value)
+        else:
+            return NotImplemented
+
+    def equals(self, other):
+        if isinstance(other, Vector):
+            return np.array_equal(self.value, other.value, equal_nan=False)
+        else:
+            return NotImplemented
     # region Overrides
 
     def __add__(self, other):
@@ -73,5 +88,4 @@ class Vector:
 
     def __repr__(self):
         return f'(x:{self.value[0]:.5f} y:{self.value[1]:.5f})'
-
     # endregion

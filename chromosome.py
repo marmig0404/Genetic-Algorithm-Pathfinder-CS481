@@ -36,4 +36,4 @@ class Chromosome:
             adjrand = random.random()
             if adjrand < rate:
                 self.genes[i] = self.magnitude * \
-                    Vector(random=True).averageWith(self.genes[i]).normalize()
+                    Vector(random=True).average_with(self.genes[i]).normalize()
