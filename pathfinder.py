@@ -1,7 +1,7 @@
 """
 # pathfinder.py - CS481-GA-PATHFINDER
 # Martin Miglio
-# 
+#
 # Pathfinder runs a genetic algorithm to control
 #   finders to intercept a target in an environment
 #   while avoiding walls.
@@ -41,7 +41,12 @@ if __name__ == "__main__":
     environment.show(window)
 
     # define the population
-    population = Population(size=35, lifespan=250, starting_position=Vector([50, 250]), window=window)
+    population = Population(
+        size=35,
+        lifespan=250,
+        starting_position=Vector([50, 250]),
+        window=window
+    )
 
     # run the window
     while(not window.isClosed()):
