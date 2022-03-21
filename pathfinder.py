@@ -37,14 +37,14 @@ if __name__ == "__main__":
     )
 
     # select environment from above and display
-    environment = simple
+    environment = swerve
     environment.show(window)
 
     # define the population
     population = Population(
         size=35,
         lifespan=250,
-        starting_position=Vector([50, 250]),
+        start_position=Vector([50, 250]),
         window=window
     )
 
