@@ -1,9 +1,20 @@
+"""
+# vector.py - CS481-GA-PATHFINDER
+# Martin Miglio
+# 
+# This class is a useful datastructure for use throughout
+#   this project: position, velocity and acceleration, as
+#   well as storing each sequence in a chromosome. This class
+#   contains useful functions for working with vectors.
+"""
+
 from math import sqrt
+import random
 import numpy as np
 
 
 def make_random_vector():
-    return np.random.random((1, 2))[0]
+    return random.uniform(-1, 1) * np.random.random((1, 2))[0]
 
 
 class Vector:
@@ -34,7 +45,12 @@ class Vector:
         return Vector((self + other) / 2)
 
     def distance_from(self, other):
+        # sub = (self - other)
+        # return sub.magnitude() # slower (see distance_calc_timing.py)
         return sqrt((self.x() - other.x()) ** 2 + (self.y() - other.y()) ** 2)
+
+    def magnitude(self):
+        return sqrt(self.x()*self.x() + self.y()*self.y())
 
     def cross(self, other):
         if isinstance(other, Vector):

@@ -1,3 +1,11 @@
+"""
+# chromosome.py - CS481-GA-PATHFINDER
+# Martin Miglio
+# 
+# This class handles the genetic processing, including
+#   the crossover and mutation functions.
+"""
+
 import random
 
 from vector import Vector
@@ -28,12 +36,19 @@ class Chromosome:
             else:
                 newgenes.append(partner.genes[index])
         # Gives DNA object an array
-        return Chromosome(newgenes, magnitude=self.magnitude)
+        return Chromosome(genes=newgenes, magnitude=self.magnitude)
 
-    def mutation(self, rate=0.5):
+    def get_mutation(self, rate=0.5):
         # Adds random mutation to the genes to add variance.
+        mutated_genes = []
         for i in range(len(self.genes)):
             adjrand = random.random()
             if adjrand < rate:
-                self.genes[i] = self.magnitude * \
-                    Vector(random=True).average_with(self.genes[i]).normalize()
+                mutated_genes.append(
+                    self.magnitude * Vector(random=True).average_with(self.genes[i]).normalize())
+            else:
+                mutated_genes.append(self.genes[i])
+        return Chromosome(genes=mutated_genes, magnitude=self.magnitude)
+
+    def get_value(self, index):
+        return self.genes[index]

@@ -1,3 +1,12 @@
+"""
+# environment.py - CS481-GA-PATHFINDER
+# Martin Miglio
+# 
+# This file contains the classes for handling the environment.
+# Collision tracking and drawing are handled here.
+"""
+
+from lib.graphics import Circle, Line, Point
 from vector import Vector
 
 
@@ -11,18 +20,35 @@ class Environment:
         return self.target.test_finish(other)
 
     def test_collision(self, other):
-        wall_collisions = [wall.test_collision(other) for wall in self.walls]
+        if len(self.walls) > 0:
+            w_collsions = any([w.test_collision(other) for w in self.walls])
+        else:
+            w_collsions = False
         border_collision = self.border.test_collision(other)
-        return any(wall_collisions) or border_collision
+        return w_collsions or border_collision
+
+    def show(self, window):
+        self.border.show(window)
+        self.target.show(window)
+        for wall in self.walls:
+            wall.show(window)
 
 
 class Target:
-    def __init__(self, position, radius):
+    def __init__(self, position):
         self.position = position
-        self.radius = radius
+        self.radius = 20
+        self.shape = Circle(
+            Point(self.position.x(), self.position.y()),
+            self.radius
+        )
+        self.shape.setFill('green')
 
     def test_finish(self, other):
-        return self.position.equals(other.position)
+        return self.position.distance_from(other.position) <= self.radius
+
+    def show(self, window):
+        self.shape.draw(window)
 
 
 class Border:
@@ -47,7 +73,12 @@ class Border:
                       self.left_wall, self.right_wall]
 
     def test_collision(self, other):
-        return any([wall.test_collision(other) for wall in self.walls])
+        collisions = [wall.test_collision(other) for wall in self.walls]
+        return any(collisions)
+
+    def show(self, window):
+        for wall in self.walls:
+            wall.show(window, width=10, fill='gray')
 
 
 class Wall:
@@ -56,10 +87,21 @@ class Wall:
         self.vector = vector
 
     def test_collision(self, other):
-        r = other.velocity
-        s = self.vector
-        q = self.position
-        p = other.position
-        u = (q - p).cross(r) / r.cross(s)
-        t = (q - p).cross(s) / r.cross(s)
-        return r.cross(s) != 0 and 0 <= t <= 1 and 0 <= u <= 1
+        def ccw(A, B, C):
+            return (C.y()-A.y()) * (B.x()-A.x()) > (B.y()-A.y()) * (C.x()-A.x())
+        A = self.position
+        B = self.position + self.vector
+        C = other.position
+        D = other.position + other.velocity
+        return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
+
+    def show(self, window, width=5, fill='black'):
+
+        self.shape = Line(
+            Point(self.position.x(), self.position.y()),
+            Point(self.position.x() + self.vector.x(),
+                  self.position.y() + self.vector.y())
+        )
+        self.shape.setWidth(width)
+        self.shape.setFill(fill)
+        self.shape.draw(window)
