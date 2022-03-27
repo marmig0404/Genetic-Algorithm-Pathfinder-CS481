@@ -24,25 +24,26 @@ class Environment:
         self.target = target
         self.walls = walls
 
-    def test_finish(self, other):
+    def test_finish(self, position):
         """A function to test finish
 
         Args:
-            other (Finder): A finder to test collision with
+            position (Vector): A position to test finish
         """
-        return self.target.test_finish(other)
+        return self.target.test_finish(position)
 
-    def test_collision(self, other):
+    def test_collision(self, position, velocity):
         """A function to test collision
 
         Args:
-            other (Finder): A finder to test collision with
+            position (Vector): A position to test collision
+            velocity (Vector): A velocity to test collision
         """
         if len(self.walls) > 0:
-            w_collsions = any([w.test_collision(other) for w in self.walls])
+            w_collsions = any([w.test_collision(position, velocity) for w in self.walls])
         else:
             w_collsions = False
-        border_collision = self.border.test_collision(other)
+        border_collision = self.border.test_collision(position, velocity)
         return w_collsions or border_collision
 
     def show(self, window):
@@ -72,13 +73,14 @@ class Target:
         )
         self.shape.setFill('green')
 
-    def test_finish(self, other):
-        """A function to test finish
+    def test_finish(self, position):
+        """A function to test collision
 
         Args:
-            other (Finder): A finder to test collision with
+            position (Vector): A position to test collision
+            velocity (Vector): A velocity to test collision
         """
-        return self.position.distance_from(other.position) <= self.radius
+        return self.position.distance_from(position) <= self.radius
 
     def show(self, window):
         """A function to display a border
@@ -117,13 +119,14 @@ class Border:
         self.walls = [self.top_wall, self.bottom_wall,
                       self.left_wall, self.right_wall]
 
-    def test_collision(self, other):
+    def test_collision(self, position, velocity):
         """A function to test collision
 
         Args:
-            other (Finder): A finder to test collision with
+            position (Vector): A position to test collision
+            velocity (Vector): A velocity to test collision
         """
-        collisions = [wall.test_collision(other) for wall in self.walls]
+        collisions = [wall.test_collision(position, velocity) for wall in self.walls]
         return any(collisions)
 
     def show(self, window):
@@ -147,19 +150,20 @@ class Wall:
         self.position = position
         self.vector = vector
 
-    def test_collision(self, other):
+    def test_collision(self, position, velocity):
         """A function to test collision
 
         Args:
-            other (Finder): A finder to test collision with
+            position (Vector): A position to test collision
+            velocity (Vector): A velocity to test collision
         """
         # math from https://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
         def ccw(A, B, C):
             return (C.y()-A.y()) * (B.x()-A.x()) > (B.y()-A.y()) * (C.x()-A.x())
         A = self.position
         B = self.position + self.vector
-        C = other.position
-        D = other.position + other.velocity
+        C = position
+        D = position + velocity
         return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
 
     def show(self, window, width=5, fill='black'):
