@@ -13,15 +13,6 @@ import random
 import numpy as np
 
 
-def make_random_vector():
-    """A function to create a random numpy vector
-
-    Returns:
-        numpy.ndarray: a random numpy vector
-    """
-    return random.uniform(-1, 1) * np.random.random((1, 2))[0]
-
-
 class Vector:
     def __init__(self, array=np.array([0, 0]), random=False):
         """Vector constructor
@@ -36,7 +27,7 @@ class Vector:
             _type_: _description_
         """
         if(random):
-            self.value = make_random_vector()
+            self.value = Vector.make_random_vector()
         elif isinstance(array, Vector):
             self.value = array.value
         elif isinstance(array, np.ndarray):
@@ -45,6 +36,15 @@ class Vector:
             self.value = np.array(array)
         else:
             return NotImplemented
+
+    @staticmethod
+    def make_random_vector():
+        """A function to create a random numpy vector
+
+        Returns:
+            numpy.ndarray: a random numpy vector
+        """
+        return random.uniform(-1, 1) * np.random.random((1, 2))[0]
 
     def x(self):
         """a function to get the x component of the vector
