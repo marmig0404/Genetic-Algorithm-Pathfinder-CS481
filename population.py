@@ -7,6 +7,8 @@
 #   and repeating.
 """
 
+import multiprocessing
+from joblib import Parallel, delayed
 import random
 
 from finder import Finder
@@ -41,13 +43,18 @@ class Population:
             window (GraphWin): a window to run the population in
             environment (Environment): an Environment to run the population in
         """
+
         alive_count = 0
         for finder in self.finders:
-            finder.update(window, environment)
-            if not (finder.crashed or finder.completed):
+            finder.draw(window)
+            if not (finder.crashed or finder.completed or finder.too_old):
                 alive_count += 1
         if alive_count == 0:  # if no finders are alive, step the population
             self.step(environment)
+        else:
+            num_cores = multiprocessing.cpu_count()
+            Parallel(n_jobs=num_cores, prefer="threads")(
+                delayed(finder.update)(environment) for finder in self.finders)
 
     def step(self, environment):
         """A function to step from one population to the next
@@ -63,11 +70,12 @@ class Population:
             reverse=True
         )
         average_fitness = sum(
-            finder.fitness for finder in self.finders)/len(self.finders)
+            finder.fitness for finder in sorted_finders)/len(sorted_finders)
+        del self.finders
         self.fitness_readout.setText(
             f"Last round's average fitness: {average_fitness}")
         # where to split the population
-        cutoff = self.size / 2 if self.size % 2 == 0 else (self.size + 1) / 2
+        cutoff = int(self.size/5)  # top 20%
         # the lucky finders who will continue on
         mating_pool = sorted_finders[0:int(cutoff) + 1]
         new_finders = []

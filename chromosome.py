@@ -8,11 +8,13 @@
 
 import random
 
-from vector import Vector
+import numpy as np
+
+from nueralnetwork import NueralNetwork
 
 
 class Chromosome:
-    def __init__(self, genes=None, lifespan=None, magnitude=1):
+    def __init__(self, genes=None, magnitude=1):
         """Chromosome constructor
 
         Args:
@@ -29,11 +31,7 @@ class Chromosome:
             self.genes = genes
         # If no genes just create random dna
         else:
-            self.genes = []
-            for _ in range(lifespan):
-                # Gives random vector
-                random_vector = Vector(random=True).normalize()
-                self.genes.append(magnitude*random_vector)
+            self.genes = NueralNetwork(8, 8, 4, 4)
 
     def crossover(self, partner):
         """A function to crossover two chromosomes
@@ -44,17 +42,34 @@ class Chromosome:
         Returns:
             Chromosome: the crossedover chromosome
         """
-        # Performs a crossover with another member of the species
-        newgenes = []
-        # Picks random midpoint
-        split_index = random.randint(1, len(self.genes))
-        for index in range(len(self.genes)):
-            if index > split_index:
-                newgenes.append(self.genes[index])
-            else:
-                newgenes.append(partner.genes[index])
-        # Gives DNA object an array
-        return Chromosome(genes=newgenes, magnitude=self.magnitude)
+
+        new = Chromosome(magnitude=self.magnitude)
+
+        new.genes.weights_in_hidden_A = self.crossover_weights(
+            self.genes.weights_in_hidden_A,
+            partner.genes.weights_in_hidden_A
+        )
+
+        new.genes.weights_hidden_A_hidden_B = self.crossover_weights(
+            self.genes.weights_hidden_A_hidden_B,
+            partner.genes.weights_hidden_A_hidden_B
+        )
+
+        new.genes.weights_hidden_B_out = self.crossover_weights(
+            self.genes.weights_hidden_B_out,
+            partner.genes.weights_hidden_B_out
+        )
+
+        return new
+
+    @staticmethod
+    def crossover_weights(weights_A, weights_B):
+        shape = weights_A.shape
+        flat_A = weights_A.flatten()
+        flat_B = weights_B.flatten()
+        split = random.randrange(0, len(flat_A))
+        new = np.append(flat_A[:split], flat_B[split:])
+        return new.reshape(shape)
 
     def get_mutation(self, rate=0.5):
         """A function to get a mutated chromosome
@@ -65,24 +80,28 @@ class Chromosome:
         Returns:
             Chromosome: the mutated chromosome
         """
-        # Adds random mutation to the genes to add variance.
-        mutated_genes = []
-        for i in range(len(self.genes)):
-            adjrand = random.random()
-            if adjrand < rate:
-                mutated_genes.append(
-                    self.magnitude * Vector(random=True).average_with(self.genes[i]).normalize())
-            else:
-                mutated_genes.append(self.genes[i])
-        return Chromosome(genes=mutated_genes, magnitude=self.magnitude)
+        new = Chromosome(magnitude=self.magnitude)
 
-    def get_value(self, index):
-        """A function to get a value from the chromosome's genes
+        weights_list = [
+            self.genes.weights_in_hidden_A,
+            self.genes.weights_hidden_A_hidden_B,
+            self.genes.weights_hidden_B_out
+        ]
 
-        Args:
-            index (int): the index of gene
+        for index, weights in enumerate(weights_list):
+            shape = weights.shape
+            flat = weights.flatten()
+            random_indecies = random.sample(
+                range(0, len(flat)), int(len(flat)*rate))
+            for random_index in random_indecies:
+                flat[random_index] *= random.uniform(-1, 1)
+            weights_list[index] = flat.reshape(shape)
 
-        Returns:
-            Vector: the vector stored at index in the chromosome's genes
-        """
-        return self.genes[index]
+        new.genes.weights_in_hidden_A = weights_list[0]
+        new.genes.weights_hidden_A_hidden_B = weights_list[1]
+        new.genes.weights_hidden_B_out = weights_list[2]
+
+        return new
+
+    def run(self, input):
+        return self.genes.run(input)

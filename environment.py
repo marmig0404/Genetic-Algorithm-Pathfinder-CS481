@@ -40,11 +40,12 @@ class Environment:
             velocity (Vector): A velocity to test collision
         """
         if len(self.walls) > 0:
-            w_collsions = any([w.test_collision(position, velocity) for w in self.walls])
+            w_collsions = any([w.test_collision(position, velocity)
+                              for w in self.walls])
         else:
             w_collsions = False
         border_collision = self.border.test_collision(position, velocity)
-        return w_collsions or border_collision
+        return border_collision or w_collsions
 
     def show(self, window):
         """A function to display a border
@@ -126,7 +127,8 @@ class Border:
             position (Vector): A position to test collision
             velocity (Vector): A velocity to test collision
         """
-        collisions = [wall.test_collision(position, velocity) for wall in self.walls]
+        collisions = [wall.test_collision(
+            position, velocity) for wall in self.walls]
         return any(collisions)
 
     def show(self, window):
@@ -157,9 +159,11 @@ class Wall:
             position (Vector): A position to test collision
             velocity (Vector): A velocity to test collision
         """
-        # math from https://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
+        # math from
+        #   https://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
         def ccw(A, B, C):
-            return (C.y()-A.y()) * (B.x()-A.x()) > (B.y()-A.y()) * (C.x()-A.x())
+            return (C.y()-A.y()) * (B.x()-A.x()) > \
+                (B.y()-A.y()) * (C.x()-A.x())
         A = self.position
         B = self.position + self.vector
         C = position

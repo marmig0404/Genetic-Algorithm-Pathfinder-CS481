@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     # define the population
     population = Population(
-        size=35,
+        size=50,
         lifespan=250,
         start_position=Vector([50, 250]),
         window=window
@@ -55,4 +55,4 @@ if __name__ == "__main__":
         # update the window
         update()
         # sleep for a short time between frames
-        time.sleep(1/500)
+        time.sleep(1/50000)

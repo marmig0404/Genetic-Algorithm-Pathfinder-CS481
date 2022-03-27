@@ -7,6 +7,7 @@
 #   the drawing, updating, and fitness calculations.
 """
 
+import math
 from chromosome import Chromosome
 from vector import Vector
 from lib.graphics import Circle, Point
@@ -14,7 +15,7 @@ from lib.graphics import Circle, Point
 
 class Finder:
 
-    def __init__(self, chromosome=None, lifespan=0, start_position=Vector([0, 0])):
+    def __init__(self, chromosome=None, lifespan=0, start_position=Vector()):
         """Finder constructor
 
         Args:
@@ -26,10 +27,10 @@ class Finder:
                 position to start. Defaults to Vector([0, 0]).
         """
         if chromosome is None:
-            self.chromosome = Chromosome(lifespan=lifespan)
+            self.chromosome = Chromosome()
         else:
             self.chromosome = chromosome
-        self.lifespan = len(self.chromosome.genes)
+        self.lifespan = lifespan
         self.start_position = start_position
         self.position = self.start_position
         self.velocity = Vector([0, 0])
@@ -37,6 +38,7 @@ class Finder:
         self.alive_duration = 0
         self.completed = False
         self.crashed = False
+        self.too_old = False
         self.fitness = 0
         self.step = 0
         self.shape = Circle(Point(self.start_position.x(),
@@ -53,50 +55,106 @@ class Finder:
         Returns:
             float: the fitness of the finder
         """
+        self.shape.undraw()  # cleanup
         fitness_total = 0
         max_distance = 1.414*500  # the diagonal of the environment area
-        distance_to_target = self.position.distance_from(
-            environment.target.position)
+
         # inverse proportionality to distance
-        fitness_total += max_distance/distance_to_target
+        # fitness_total += max_distance / \
+        #     self.position.distance_from(environment.target.position)
+        # proportionality to distance from start
+        fitness_total += self.position.distance_from(
+            self.start_position) / max_distance
         # proportionality to duration
         fitness_total += self.alive_duration/self.lifespan
         if self.crashed:
             fitness_total -= 2  # crashed, take away fitness
+        if self.too_old:
+            fitness_total -= .5  # too old, take away fitness
         if self.completed:
             fitness_total += 10  # finished, add fitness
         self.fitness = fitness_total
         return fitness_total
 
-    def update(self, window, environment):
+    def update(self, environment):
         """A function to update a finder
 
         Args:
-            window (GraphWin): a window to update the finder in
             environment (Environment): an environment to update the finder in
         """
-        # draw the first frame
-        if self.step == 0:
-            self.shape.draw(window)
-        # if out of steps in chromosome, crash the finder
-        if self.step >= self.lifespan:
-            self.crashed = True
-        if not self.crashed and not self.completed:
-            self.alive_duration += 1
+        if not self.crashed and not self.completed and not self.too_old:
             # update the physics
             self.position += self.velocity
             self.velocity += self.acceleration
-            self.acceleration = self.chromosome.get_value(self.step)
-            # test collision and completion
-            self.crashed = environment.test_collision(self)
-            self.completed = environment.test_finish(self)
+            self.acceleration = self.calculate_acceleration(environment)
+            # test collision, completion, and age
+            self.crashed = environment.test_collision(
+                self.position,
+                self.velocity
+            )
+            self.completed = environment.test_finish(self.position)
+            self.too_old = self.step >= self.lifespan
+            # step counters
+            self.alive_duration += 1
+        self.step += 1
+
+    def draw(self, window):
+        """A function to draw a finder
+
+        Args:
+            window (GraphWin): a window to update the finder in
+        """
+        if self.step == 0:
+            # draw the first frame
+            self.shape.draw(window)
+        elif not self.crashed and not self.completed and not self.too_old:
             # update the graphic
             self.shape.move(self.velocity.x(), self.velocity.y())
-        if self.crashed:
-            self.shape.setFill("pink")
-        if self.completed:
-            self.shape.setFill("yellow")
-        self.step += 1
+        else:
+            # update colors
+            if self.crashed:
+                self.shape.setFill("pink")
+            elif self.completed:
+                self.shape.setFill("yellow")
+            elif self.too_old:
+                self.shape.setFill("gray")
+
+    @staticmethod
+    def make_rays(n, mag):
+        """A static method to create rays at regular intervals
+
+        Args:
+            n (int): number of rays to create
+            mag (float): magnitude of rays
+
+        Returns:
+            list[Vector]: generated rays
+        """
+        c = 2*math.pi/n
+        return [mag * Vector([math.cos(c*k), math.sin(c*k)]) for k in range(n)]
+
+    def calculate_acceleration(self, env):
+        """A function to calculate this step's acceleration
+
+        Args:
+            env (Environment): the finder's environment
+
+        Returns:
+            Vector: the calulated acceleration
+        """
+        # create vision rays
+        rays = Finder.make_rays(n=8, mag=50)
+        # test vision rays for collisions,
+        ray_tests = [
+            -1 if env.test_collision(self.position, ray) else 1 for ray in rays
+        ]
+        # supply nn w data
+        output = self.chromosome.run(ray_tests)
+        # return acceleration based off nn output
+        acceleration = Vector([0, 0])
+        for (direction, magnitude) in zip(rays, output):
+            acceleration += (direction.normalize() * magnitude[0])
+        return acceleration
 
     def get_child(self, other):
         """A function to create a child finder with another
@@ -107,9 +165,9 @@ class Finder:
         Returns:
             Finder: the newly created child finder
         """
-        mutation_rate = 0.05  # tuned mutation rate (5%)
         child_chromosome = self.chromosome.crossover(other.chromosome)
-        child_chromosome = child_chromosome.get_mutation(mutation_rate)
-        child = Finder(chromosome=child_chromosome,
-                       start_position=self.start_position)
-        return child
+        child_chromosome = child_chromosome.get_mutation(rate=0.2)
+        return Finder(chromosome=child_chromosome,
+                      start_position=self.start_position,
+                      lifespan=self.lifespan
+                      )
