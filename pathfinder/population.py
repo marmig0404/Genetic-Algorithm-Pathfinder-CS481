@@ -9,8 +9,8 @@
 
 import random
 
-from finder import Finder
-from lib.graphics import Point, Text
+from pathfinder.finder import Finder
+from pathfinder.lib.graphics import Point, Text
 
 
 class Population:

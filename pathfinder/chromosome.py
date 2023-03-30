@@ -8,7 +8,7 @@
 
 import random
 
-from vector import Vector
+from pathfinder.vector import Vector
 
 
 class Chromosome:

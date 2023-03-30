@@ -8,13 +8,13 @@
 """
 
 import time
-from vector import Vector
-from environment import Environment, Border, Target, Wall
-from population import Population
-from lib.graphics import GraphWin, update
 
+from pathfinder.environment import Border, Environment, Target, Wall
+from pathfinder.lib.graphics import GraphWin, update
+from pathfinder.population import Population
+from pathfinder.vector import Vector
 
-if __name__ == "__main__":
+def main():
     # make window to display GUI
     window = GraphWin("Path Finder", 500, 550, autoflush=False)
 
@@ -56,3 +56,7 @@ if __name__ == "__main__":
         update()
         # sleep for a short time between frames
         time.sleep(1/500)
+
+
+if __name__ == "__main__":
+    main()

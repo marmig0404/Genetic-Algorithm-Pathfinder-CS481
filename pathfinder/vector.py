@@ -8,8 +8,9 @@
 #   contains useful functions for working with vectors.
 """
 
-from math import sqrt
 import random
+from math import sqrt
+
 import numpy as np
 
 

@@ -7,9 +7,9 @@
 #   the drawing, updating, and fitness calculations.
 """
 
-from chromosome import Chromosome
-from vector import Vector
-from lib.graphics import Circle, Point
+from pathfinder.chromosome import Chromosome
+from pathfinder.lib.graphics import Circle, Point
+from pathfinder.vector import Vector
 
 
 class Finder:
