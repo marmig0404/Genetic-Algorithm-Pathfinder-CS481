@@ -9,10 +9,12 @@
 
 import time
 
+from graphics import GraphWin, update
+
 from pathfinder.environment import Border, Environment, Target, Wall
-from pathfinder.lib.graphics import GraphWin, update
 from pathfinder.population import Population
 from pathfinder.vector import Vector
+
 
 def main():
     # make window to display GUI

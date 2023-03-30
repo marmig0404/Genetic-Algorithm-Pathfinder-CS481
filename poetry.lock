@@ -186,6 +186,17 @@ files = [
 gitdb = ">=4.0.1,<5"
 
 [[package]]
+name = "graphics-py"
+version = "5.0.1.post1"
+description = "John Zelles graphics.py package, for use with the textbook \"Python Programming: An Introduction to Computer Science\""
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "graphics.py-5.0.1.post1.tar.gz", hash = "sha256:583561cc577447e452fb2b1352c0fc615396b12b30dfbbce48e8190d2e330a97"},
+]
+
+[[package]]
 name = "isort"
 version = "5.12.0"
 description = "A Python utility / library to sort Python imports."
@@ -808,4 +819,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2886f63e39b1be2f2171b187d81ef4e6dd03d0c47ba06a0de6a58938d5e6ce8a"
+content-hash = "3a864381f649670f2c5fefd152d7e1a212c552f34256b4bfd8a10cc9a5a45246"

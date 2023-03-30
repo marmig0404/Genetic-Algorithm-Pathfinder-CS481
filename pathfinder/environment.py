@@ -6,7 +6,8 @@
 # Collision tracking and drawing are handled here.
 """
 
-from pathfinder.lib.graphics import Circle, Line, Point
+from graphics import Circle, Line, Point
+
 from pathfinder.vector import Vector
 
 
